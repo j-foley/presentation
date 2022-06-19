@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <title>reveal.js</title>
+
+    <link rel="stylesheet" href="dist/reset.css" />
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" />
+
+    <!-- Theme used for syntax highlighted code -->
+    <link rel="stylesheet" href="plugin/highlight/monokai.css" />
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h1>Hassle Free Animation in React</h1>
+        </section>
+        <section>
+          <h2>Agenda</h2>
+          <ol>
+            <li>Introduce the options</li>
+            <li>Walk through the code</li>
+            <li>Break for food</li>
+            <li>Breakout coding session</li>
+          </ol>
+        </section>
+        <section>
+          <h2>Animation</h2>
+          <h3>More than aesthetics</h3>
+          <img width="350" src="images/auto-animate-list.gif" alt="Animated list" />
+          <aside class="notes">
+            <ul>
+              <li>Essential part of the UX language</li>
+              <li>Simple motion conveys the context of an action/event</li>
+              <li>Provides system feedback for action/event</li>
+              <li>Should be subtle</li>
+            </ul>
+          </aside>
+        </section>
+        <section>
+          <h2>CSS - Our baseline</h2>
+          <div style="display: flex; align-items: center; flex-direction: column; padding: 2em">
+            <div class="cat">
+              <div class="ear ear--left"></div>
+              <div class="ear ear--right"></div>
+              <div class="face">
+                <div class="eye eye--left">
+                  <div class="eye-pupil"></div>
+                </div>
+                <div class="eye eye--right">
+                  <div class="eye-pupil"></div>
+                </div>
+                <div class="muzzle"></div>
+              </div>
+            </div>
+          </div>
+          <aside class="notes">
+            <p>
+              Today we will discuss 3 libraries, but I would be remiss to not mention vanilla css
+            </p>
+            <h4>Pros</h4>
+            <ul>
+              <li>Most performant (usually)</li>
+              <li>Vast community and support</li>
+              <li>Baked-into the browser</li>
+            </ul>
+            <h4>Cons</h4>
+            <ul>
+              <li>Verbose</li>
+              <li>not the most intuative</li>
+            </ul>
+          </aside>
+        </section>
+        <section>
+          <section id="fragments">
+            <h2>Auto-Animate</h2>
+            <p>
+              <span>They claim it is.. </span
+              ><span class="fragment">a Zero-config drop-in animation utility</span>
+            </p>
+          </section>
+          <section id="fragments">
+            <h3>How it works</h3>
+            <ul>
+              <li class="fragment">useAutoAnimate hook & refs</li>
+              <li class="fragment">
+                ref is attached to a parent which keeps tabs on itself and its children
+              </li>
+            </ul>
+            <aside class="notes">Hook can provide or be given a ref</aside>
+          </section>
+          <section id="fragments">
+            <pre
+              data-id="code-animation"
+            ><code class="hljs" data-trim data-line-numbers="|2,9|6,9|6,14|15,16"><script type="text/template">
+     		import { useState, useRef, useEffect } from 'react'
+							import autoAnimate from '@formkit/auto-animate'
+
+							export const Dropdown = () => {
+								const [show, setShow] = useState(false)
+								const parent = useRef(null)
+
+								useEffect(() => {
+									parent.current && autoAnimate(parent.current)
+								}, [parent])
+
+								const reveal = () => setShow(!show)
+
+								return <div ref={parent}>
+									<strong className="dropdown-label" onClick={reveal}>Click me to open!</strong>
+									{ show && <p className="dropdown-content" >Lorum ipsum...</p> }
+								</div>
+							}
+            </script></code></pre>
+          </section>
+          <!-- <section id="fragments">
+            <pre
+              data-id="code-animation"
+            ><code class="hljs" data-trim data-line-numbers="|3|14,15,16,17,18,19|22,23|24|15,16"><script type="text/template">
+        import autoAnimate, { getTransitionSizes } from '@formkit/auto-animate'
+
+              autoAnimate(parentElement, (el, action, oldCoords, newCoords) => {
+                let keyframes
+
+                if (action === 'add') {
+                  keyframes = [
+                    { transform: 'scale(0)', opacity: 0 },
+                    { transform: 'scale(1.15)', opacity: 1, offset: 0.75 },
+                    { transform: 'scale(1)', opacity: 1 }
+                  ]
+                }
+                if (action === 'remove') {
+                  keyframes = [
+                    { transform: 'scale(1)', opacity: 1 },
+                    { transform: 'scale(1.15)', opacity: 1, offset: 0.33 },
+                    { transform: 'scale(0.75)', opacity: 0.1, offset: 0.5 },
+                    { transform: 'scale(0.5)', opacity: 0 }
+                  ]
+                }
+                if (action === 'remain') {
+                  const deltaX = oldCoords.left - newCoords.left
+                  const deltaY = oldCoords.top - newCoords.top
+                  const [widthFrom, widthTo, heightFrom, heightTo] = getTransitionSizes(el, oldCoords, newCoords)
+                  // set up our steps with our positioning keyframes
+                  const start = { transform: `translate(${deltaX}px, ${deltaY}px)` }
+                  const mid = { transform: `translate(${deltaX * -0.15}px, ${deltaY * -0.15}px)`, offset: 0.75 }
+                  const end = { transform: `translate(0, 0)` }
+                  // if the dimensions changed, animate them too.
+                  if (widthFrom !== widthTo) {
+                    start.width = `${widthFrom}px`
+                    mid.width = `${widthFrom >= widthTo ? widthTo / 1.05 : widthTo * 1.05}px`
+                    end.width = `${widthTo}px`
+                  }
+                  if (heightFrom !== heightTo) {
+                    start.height = `${heightFrom}px`
+                    mid.height = `${heightFrom >= heightTo ? heightTo / 1.05 : heightTo * 1.05}px`
+                    end.height = `${heightTo}px`
+                  }
+                  keyframes = [start, mid, end]
+                }
+                // return our KeyframeEffect() and pass
+                // it the chosen keyframes.
+                return new KeyframeEffect(el, keyframes, { duration: 600, easing: 'ease-out' })
+              }))
+              
+            </script></code></pre>
+            <aside class="notes">
+              <ol>
+                <li>supply a different set of keyframes for each action</li>
+                <li>
+                  keyframes can have as many "steps" as you prefer and you can use the 'offset' key
+                  to tune the timing
+                </li>
+                <li>
+                  for items that remain, calculate the delta from their old position to their new
+                  position
+                </li>
+                <li>
+                  use the getTransitionSizes() helper function to get the old and new widths of the
+                  elements
+                </li>
+              </ol>
+            </aside>
+          </section> -->
+          <section id="fragments">
+            <h3>Pros</h3>
+            <ul>
+              <li class="fragment">Truly plug and play</li>
+              <li class="fragment">Minimal markup</li>
+              <li class="fragment">No dependencies</li>
+              <li class="fragment">
+                Tiny bundle size -
+                <a href="https://bundlephobia.com/package/@formkit/auto-animate@1.0.0-beta.1"
+                  >5.3 kB minified</a
+                >
+              </li>
+              <li class="fragment">It's new!...</li>
+            </ul>
+          </section>
+          <section id="fragments">
+            <h3>Cons</h3>
+            <ul>
+              <li>...it's new</li>
+              <li>Fiddly config for complex animations</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>Framer Motion</h2>
+            <p>
+              <span>They claim it is.. </span
+              ><span class="fragment"
+                >a production-ready motion library that's designed for all creative developers</span
+              >
+            </p>
+          </section>
+          <section>
+            <h3>How it works</h3>
+            <ul>
+              <li class="fragment">Motion component</li>
+              <li class="fragment">AnimatePresence</li>
+              <li class="fragment">LazyMotion</li>
+            </ul>
+            <aside class="notes">There exists a Motion component for every HTML primitive</aside>
+          </section>
+          <section id="fragments">
+            <h3>Pros</h3>
+            <ul>
+              <li class="fragment">Robust animation support</li>
+              <li class="fragment">Server-side rendering</li>
+              <li class="fragment">Optimisation options</li>
+              <li class="fragment">Comprehensive Documentation...</li>
+            </ul>
+          </section>
+          <section id="fragments">
+            <h3>Cons</h3>
+            <ul>
+              <li>...Documentation has no search???</li>
+              <li class="fragment">Dependent on other libraries</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <section>
+            <h2>React Spring</h2>
+            <p>
+              <span>They claim it is.. </span
+              ><span class="fragment"
+                >a <strong>spring-physics</strong> based animation library that should cover most of
+                your UI related animation needs</span
+              >
+            </p>
+            <aside class="notes">
+              <ul>
+                <li>flexible and covers most animations</li>
+                <li>
+                  Inherits some properties from React Motion, such as ease of use, interpolation,
+                  and performance
+                </li>
+              </ul>
+            </aside>
+          </section>
+          <section>
+            <h3>How it works</h3>
+            <ul>
+              <li class="fragment">animation component</li>
+              <li class="fragment">useSpring hook</li>
+              <li class="fragment">useTransition hook</li>
+            </ul>
+            <aside class="notes">There exists a animation component for every HTML primitive</aside>
+          </section>
+          <section id="fragments">
+            <pre
+              data-id="code-animation"
+            ><code class="hljs" data-trim data-line-numbers="|1,4,8|"><script type="text/template">
+        import { useSpring, animated } from '@react-spring/web'
+              
+              export const List = () => {
+                const style = useSpring({ opacity: 1 }, from: { opacity: 0 })
+              
+                return (
+                  <ul>
+                      <animated.li style={style} >
+                        <div>List item</div>
+                      </animated.li>
+                  </ul>
+                )
+              }
+            </script></code></pre>
+          </section>
+          <section id="fragments">
+            <h3>Pros</h3>
+            <ul>
+              <li class="fragment">Animates without relying on React</li>
+              <li class="fragment">Mature library</li>
+            </ul>
+            <aside class="notes">
+              Animates without relying on React to render updates frame by frame
+            </aside>
+          </section>
+          <section id="fragments">
+            <h3>Cons</h3>
+            <ul>
+              <li>Inconsistent & dated documentation</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Bundle size (minified)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Auto-animate</td>
+                <td>
+                  <a href="https://bundlephobia.com/package/@formkit/auto-animate@1.0.0-beta.1"
+                    >5.3 kB minified</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>Framer Motion</td>
+                <td>
+                  <a href="https://bundlephobia.com/package/framer-motion@6.3.13"
+                    >140.7 kB minified</a
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>react-spring</td>
+                <td>
+                  <a href="https://bundlephobia.com/package/react-spring@9.4.5"
+                    >168.5 kB minified</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h2>Q & A</h2>
+        </section>
+        <section>
+          <h4 style="text-align: left">Break for Food...</h4>
+          <img width="350" src="images/batman-transition.gif" alt="Animated list" />
+          <h4 style="text-align: right">...Then a walk through some code</h4>
+        </section>
+      </div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script>
+      // More info about initialization & config:
+      // - https://revealjs.com/initialization/
+      // - https://revealjs.com/config/
+      Reveal.initialize({
+        hash: true,
+
+        // Learn about plugins: https://revealjs.com/plugins/
+        plugins: [RevealMarkdown, RevealHighlight, RevealNotes]
+      })
+    </script>
+  </body>
+</html>
